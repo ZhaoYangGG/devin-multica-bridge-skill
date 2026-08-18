@@ -109,19 +109,19 @@ Multica's command parser treats backslash as an escape character. Always use for
 Correct:
 
 ```text
-C:/Users/mt/AppData/Local/devin/cli/devin-multica-acp.ps1
+C:/Users/<WindowsUser>/AppData/Local/devin/cli/devin-multica-acp.ps1
 ```
 
 Incorrect:
 
 ```text
-C:\Users\mt\AppData\Local\devin\cli\devin-multica-acp.ps1
+C:\Users\<WindowsUser>\AppData\Local\devin\cli\devin-multica-acp.ps1
 ```
 
 A broken parsed path looks like:
 
 ```text
-C:UsersmtAppDataLocaldevinclidevin-multica-acp.ps1
+C:UsersWindowsUserAppDataLocaldevinclidevin-multica-acp.ps1
 ```
 
 Before saving, inspect Multica's parsed-command preview. It must preserve the complete forward-slash path.
@@ -190,14 +190,14 @@ List exact account models with:
 devin models list
 ```
 
-Use only a family slug, alias, or model UID shown by that command. Examples vary by account:
+Use only a family slug, alias, or model UID shown by that command. Examples vary by account and change over time; do not assume a name is valid without checking `devin models list`:
 
 ```text
 adaptive
 swe-1-7
-gpt-5-6-terra-high
 claude-opus-4-8-high
 gpt-5-3-codex-high
+gemini-3-1-pro-high
 ```
 
 ### Empty or incorrect model selector
@@ -214,7 +214,7 @@ Because this is an unofficial Kiro/ACP adaptation, model catalog discovery may n
 Example:
 
 ```text
-DEVIN_MODEL=gpt-5-6-terra-high
+DEVIN_MODEL=gpt-5-3-codex-high
 ```
 
 Do not set both a Multica model and `DEVIN_MODEL`.
