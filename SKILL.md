@@ -200,24 +200,38 @@ gpt-5-3-codex-high
 gemini-3-1-pro-high
 ```
 
-### Empty or incorrect model selector
+### Always leave the Multica model selector empty for Devin
 
-Because this is an unofficial Kiro/ACP adaptation, model catalog discovery may not map perfectly. Configure the model per Multica agent:
-
-1. Leave Multica's model selector empty.
-2. Add an agent environment variable:
-   ```text
-   DEVIN_MODEL=<exact Devin model UID or alias>
-   ```
-3. Save and start a new task.
-
-Example:
+Even when Multica successfully reads Devin's model list and lets you pick a model from the dropdown, **do not select a model in the dropdown**. Selecting a model makes Multica's Kiro adapter send `session/setModel` at runtime, but Devin's ACP server does not implement that method and the task fails with:
 
 ```text
-DEVIN_MODEL=gpt-5-3-codex-high
+kiro could not switch to model "<model>": session/set_model: Method not found (code=-32601)
 ```
 
-Do not set both a Multica model and `DEVIN_MODEL`.
+Devin ACP only accepts the model at process startup, via `--model` or the `DEVIN_MODEL` environment variable. Runtime model switching is not supported.
+
+### Configure the model via agent environment variable
+
+1. In Multica → Agents → your Devin agent, leave the **model dropdown empty** (or "None").
+2. Scroll to the agent's **Environment variables** section.
+3. Add one entry. Multica stores env vars as separate KEY and VALUE fields — do **not** put `KEY=VALUE` in a single box:
+
+   | Field | Value |
+   |---|---|
+   | KEY | `DEVIN_MODEL` |
+   | VALUE | `<exact Devin model UID or alias from devin models list>` |
+
+4. Save and start a new task.
+
+Example values (verify against `devin models list` for your account):
+
+| KEY | VALUE |
+|---|---|
+| `DEVIN_MODEL` | `gpt-5-3-codex-high` |
+| `DEVIN_MODEL` | `claude-opus-4-8-high` |
+| `DEVIN_MODEL` | `glm-5-2` |
+
+Do not set both a Multica dropdown model and `DEVIN_MODEL` — the dropdown alone will trigger the unsupported `session/setModel` call regardless of whether `DEVIN_MODEL` is also set.
 
 To force one model for every agent on this runtime, append to the custom command:
 
@@ -257,6 +271,7 @@ Only then add MCP servers, skills, higher concurrency, or expensive models.
 | Custom profile is the only runtime | Multica requires a built-in runtime first | Keep Codex, Qoder, or another native runtime detected |
 | `kiro initialize failed` | Wrapper failed, args are wrong, or ACP incompatibility | Run both smoke tests and inspect model-list/task logs |
 | Model selector shows Kiro values | Provider metadata did not map to Devin | Leave selector empty and use per-agent `DEVIN_MODEL` |
+| `session/set_model: Method not found (code=-32601)` | Multica dropdown sent runtime `setModel`, Devin ACP doesn't support it | Clear the agent model dropdown; set `DEVIN_MODEL` env var instead |
 | Unexpected model | Multiple overrides conflict | Keep only one of Agent model, `DEVIN_MODEL`, or fixed `--model` |
 | HTTP 502 fetching/registering profiles | Multica service/network failure | Retry after service recovery; do not change the wrapper |
 | Repository clone errors appear nearby | Separate repository authentication issue | Diagnose repository access separately from ACP |
